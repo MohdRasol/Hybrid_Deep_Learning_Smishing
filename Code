@@ -1,0 +1,82 @@
+import pandas as pd
+import numpy as np
+import re
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, roc_curve
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Embedding, Conv1D, MaxPooling1D, Bidirectional, GRU, Dense, Dropout, GlobalAveragePooling1D
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Step 1: Load dataset / Kaggle / or raw file
+df = pd.read_csv('spam.csv', encoding='latin-1')[['v1', 'v2']]
+df.columns = ['label', 'message']
+df['label'] = df['label'].map({'ham': 0, 'spam': 1})
+
+# Step 2: Basic text cleaning
+def clean_text(text):
+    text = re.sub(r'\W+', ' ', text)  # Remove punctuation
+    text = text.lower()
+    return text
+
+df['cleaned'] = df['message'].apply(clean_text)
+
+# Step 3: Tokenization and padding
+tokenizer = Tokenizer()
+tokenizer.fit_on_texts(df['cleaned'])
+sequences = tokenizer.texts_to_sequences(df['cleaned'])
+
+max_len = 100
+X = pad_sequences(sequences, maxlen=max_len)
+y = df['label'].values
+
+# Step 4: Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
+
+# Step 5: Model definition - CNN + BiGRU
+vocab_size = len(tokenizer.word_index) + 1
+model = Sequential([
+    Embedding(vocab_size, 128, input_length=max_len),
+    Conv1D(64, 5, activation='relu'),
+    MaxPooling1D(pool_size=2),
+    Bidirectional(GRU(64, return_sequences=True)),
+    GlobalAveragePooling1D(),
+    Dense(64, activation='relu'),
+    Dropout(0.5),
+    Dense(1, activation='sigmoid')
+])
+
+model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+model.summary()
+
+# Step 6: Train the model
+history = model.fit(X_train, y_train, epochs=5, batch_size=32, validation_split=0.2)
+
+# Step 7: Evaluate
+y_pred_probs = model.predict(X_test).flatten()
+y_pred = (y_pred_probs > 0.5).astype(int)
+
+print("\nClassification Report:\n", classification_report(y_test, y_pred, digits=4))
+print("AUC Score:", roc_auc_score(y_test, y_pred_probs))
+
+# Step 8: Confusion Matrix
+cm = confusion_matrix(y_test, y_pred)
+sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=["Ham", "Spam"], yticklabels=["Ham", "Spam"])
+plt.title("Confusion Matrix")
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+plt.show()
+
+# Step 9: ROC Curve
+fpr, tpr, _ = roc_curve(y_test, y_pred_probs)
+plt.plot(fpr, tpr, color='orange', label=f'AUC = {roc_auc_score(y_test, y_pred_probs):.3f}')
+plt.plot([0, 1], [0, 1], color='gray', linestyle='--')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('ROC Curve - CNN-BiGRU')
+plt.legend()
+plt.grid(True)
+plt.show()

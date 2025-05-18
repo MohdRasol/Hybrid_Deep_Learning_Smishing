@@ -27,3 +27,7 @@ Install via pip:
 
 ```bash
 pip install -r requirements.txt
+
+# You can use conda as well
+conda env create -f environment.yml
+conda activate smishing-nlp

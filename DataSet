@@ -1,0 +1,9 @@
+SMS Spam Collection Dataset (English)
+
+Source: UCI Machine Learning Repository
+
+Access: Kaggle Link
+
+Description: This dataset contains English SMS messages labeled as spam or ham.
+
+Usage: Can be used as a reference or for transfer learning purposes when developing models for Arabic SMS spam detection.

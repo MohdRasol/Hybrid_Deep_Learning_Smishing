@@ -1,9 +1,108 @@
-SMS Spam Collection Dataset (English)
+🧠 Deep Dive: Dataset/ Folder Structure & Content developed by Mohammed Rasol Al Saidat April 2025
 
-Source: UCI Machine Learning Repository
+📂 Folder: Dataset/ Purpose:
 
-Access: Kaggle Link
+This folder houses the raw labeled SMS data that is used to:
+1) Train Word2Vec embeddings
+2)Build input tensors for the CNN–BiGRU model
+3)Evaluate the model via metrics like ROC, accuracy, F1-score, etc.
 
-Description: This dataset contains English SMS messages labeled as spam or ham.
+📄 Core File: smishing_dataset.csv from Archive.zip
+Required Columns:
+Column Name	Type	Description
+text	string	Raw Arabic SMS content
+label	int	Target classification label: 1 for smishing (malicious), 0 for legitimate
+Example Rows:
+text,label
+"تهانينا! لقد ربحت 10000 دولار. اضغط هنا لاستلام جائزتك.",1
+"مرحبا بك، هذه تذكير بموعدك في المستشفى.",0
+"تم تعليق حسابك البنكي، قم بالتحديث الآن.",1
+"لا تنس دفع فاتورتك هذا الأسبوع.",0
 
-Usage: Can be used as a reference or for transfer learning purposes when developing models for Arabic SMS spam detection.
+⚙️ Technical Requirements for This Dataset
+1. Text Quality & Format
+
+#Arabic NLP poses unique challenges:
+
+1) Diacritics (تشكيل): Commonly removed in preprocessing to reduce noise
+
+2) Letter Variants: Normalize different forms (e.g., “أ”, “إ”, “آ” → “ا”)
+
+3) Elongations: Remove character elongations (e.g., “مبروووووك” → “مبروك”)
+
+4) Mixed Scripts: Handle Arabic + Latin (e.g., short URLs, numbers)
+
+🔍 The preprocessing.py file is expected to clean, normalize, and tokenize the Arabic text using tools like:
+
+A) FarasaSegmenter (for tokenization)
+
+B) Regex-based cleaning functions
+
+C) NLTK or custom Arabic stemmers/normalizers
+
+2. Class Distribution
+
+It is critical to maintain a balanced dataset:
+
+Smishing messages are often minority class, but you should either Use stratified sampling, Apply oversampling (e.g., SMOTE) or undersampling during training
+Use class weights in the loss function.
+
+📊 Ideally:
+
+50% label = 1 (Smishing)
+
+50% label = 0 (Ham/Legitimate)
+
+If not, report class imbalance and handle accordingly in training logic.
+
+3. Data Volume Requirements
+
+For deep learning to generalize well:
+
+Model Type	Minimum Recommended Rows
+CNN–BiGRU Hybrid	5,000+ rows
+Small Experimental	500–1,000 rows
+Word2Vec Training	10,000+ raw sentences
+
+🧠 Note: Even if you have 2,000–3,000 samples, the model can learn patterns, but the risk of overfitting increases — apply dropout, early stopping, or k-fold CV.
+
+🏷️ Labeling Considerations
+Label	Meaning	Details
+1	Smishing	Messages designed to deceive, e.g., phishing links, prizes, impersonation
+0	Legitimate	Real-world user texts, service messages, medical reminders, etc.
+
+Smishing messages often include:
+
+URGENT actions ("قم الآن", "بسرعة")
+
+Financial deception ("ربحت", "حسابك", "بطاقتك")
+
+Shortened or suspicious URLs
+
+Authority impersonation ("وزارة", "بنك", "شركة الاتصالات")
+
+🧪 Data Preprocessing Expected
+
+Before feeding into the model:
+
+Step	Purpose
+Remove diacritics	Normalize script variations
+Normalize Arabic letters	Reduce character diversity for consistent tokenization
+Tokenize using Farasa	Tokenize Arabic correctly (respecting word roots, clitics)
+Pad/truncate sequences	Make input tensors uniform 
+Word2Vec embedding	Use either pre-trained or custom-trained embeddings
+
+📦 How to Use It
+
+Place this file in your project at:
+
+Hybrid_Deep_Learning_Smishing/Dataset/smishing_dataset.csv
+
+
+Then update your data loading code in train.py or similar:
+
+import pandas as pd
+
+df = pd.read_csv("Dataset/smishing_dataset.csv")
+texts = df["text"]
+labels = df["label"]

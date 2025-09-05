@@ -1,1 +1,101 @@
 pip install pandas scikit-learn matplotlib seaborn tensorflow
+🧠 What to Include in Prerequisite/ —  Technical Breakdown Prepared by Mohammed rasol Al Saidat:
+📦 1. requirements.txt OR environment.yml
+
+These define all Python libraries needed to run the codebase.
+
+Example: 
+requirements.txt
+numpy
+pandas
+scikit-learn
+matplotlib
+seaborn
+tensorflow==2.12.0  # Or pytorch, depending on framework
+keras
+nltk
+gensim
+farasa
+arabicstopwords
+lime
+
+
+🔍 Key inclusions:
+
+farasa: For Arabic tokenization
+
+lime: For model explainability
+
+gensim: For training Word2Vec
+
+arabicstopwords or camel_tools: For Arabic-specific NLP (optional but valuable)
+
+⚙️ 2. Arabic NLP Tools Installation Scripts
+✅ install_farasa.sh (or .bat on Windows)
+
+If using Farasa tokenizer, it’s a Java-based segmenter and must be downloaded/configured manually.
+
+#!/bin/bash
+echo "Downloading Farasa Segmenter..."
+wget https://farasa.qcri.org/downloads/farasa-segmenter-jar-with-dependencies.jar -O farasa.jar
+echo "Done. You can run Farasa via:"
+echo "java -Xmx1G -jar farasa.jar"
+
+
+Also include:
+
+farasa.jar
+
+README_FARASA.md: Instructions for launching Farasa and integrating it with Python using py4j or subprocess.
+
+📜 3. README_Prerequisite.md
+
+A guide explaining:
+
+How to install dependencies
+
+How to configure environment variables (if any)
+
+GPU requirements or recommendations
+
+Java runtime setup for Farasa
+
+Optional: pre-trained Word2Vec models (see below)
+
+💾 4. Pretrained Word Embeddings (Optional but Valuable)
+
+If you use Word2Vec embeddings:
+
+📁 Word2Vec/
+
+arabic_word2vec.bin or .vec
+
+Script: train_word2vec.py if you train on your own data
+
+README explaining how embeddings were trained or sourced
+
+Or include download links in README_Prerequisite.md, for example:
+
+# Download Arabic Word2Vec (pretrained)
+wget http://vectors.nlpl.eu/repository/20/52.zip
+
+🔧 5. Optional Scripts
+
+If your preprocessing pipeline requires extra setup, include:
+
+File	Purpose
+download_nltk_data.py	Downloads required Arabic stopwords or tokenizers
+check_gpu_support.py	Checks CUDA/TF/PyTorch GPU availability
+test_env.py	Runs a test forward pass of the model for verification
+📂 Folder Structure Summary
+Prerequisite/
+├── requirements.txt
+├── install_farasa.sh
+├── farasa.jar
+├── README_Prerequisite.md
+├── Word2Vec/
+│   ├── arabic_word2vec.bin
+│   └── train_word2vec.py
+├── download_nltk_data.py
+├── check_gpu_support.py
+└── test_env.py
